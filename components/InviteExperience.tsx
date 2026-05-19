@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { Guest, WeddingConfig } from "@/lib/types";
 
 type Props = {
-  guest: Guest;
+  guest?: Guest;
   wedding: WeddingConfig;
 };
 
@@ -73,8 +73,18 @@ export function InviteExperience({ guest, wedding }: Props) {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.28 }}
             >
-              <p className="font-serif text-lg font-bold tracking-[0.35em] text-gold/85">诚邀</p>
-              <h2 className="font-kai gold-text mt-4 break-words text-4xl font-black">{guest.displayName}</h2>
+              {guest ? (
+                <>
+                  <p className="font-serif text-lg font-bold tracking-[0.35em] text-gold/85">诚邀</p>
+                  <h2 className="font-kai gold-text mt-4 break-words text-4xl font-black">{guest.displayName}</h2>
+                </>
+              ) : (
+                <p className="font-serif text-lg font-bold leading-9 text-gold/85">
+                  谨以此柬
+                  <br />
+                  敬邀亲友莅临
+                </p>
+              )}
               <p className="mt-6 font-serif text-lg font-bold leading-9 text-ivory drop-shadow">
                 莅临
                 <br />

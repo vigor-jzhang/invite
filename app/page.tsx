@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
+import { InviteExperience } from "@/components/InviteExperience";
+import { weddingConfig } from "@/lib/wedding-config";
 
 export default function Home() {
-  redirect("/i/demo");
+  return <InviteExperience wedding={weddingConfig} />;
 }
