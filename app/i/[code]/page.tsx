@@ -5,6 +5,8 @@ import { findGuestByCode } from "@/lib/store";
 import { isInviteCode } from "@/lib/validation";
 import { weddingConfig } from "@/lib/wedding-config";
 
+const shareImage = "/share-card.png";
+
 type InvitePageProps = {
   params: Promise<{ code: string }>;
 };
@@ -29,12 +31,14 @@ export async function generateMetadata({ params }: InvitePageProps): Promise<Met
     openGraph: {
       title,
       description,
-      type: "website"
+      type: "website",
+      images: [shareImage]
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
-      description
+      description,
+      images: [shareImage]
     }
   };
 }
