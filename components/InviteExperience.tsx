@@ -15,21 +15,33 @@ export function InviteExperience({ guest, wedding }: Props) {
   const [status, setStatus] = useState<RsvpStatus>(guest.rsvpStatus);
   const [message, setMessage] = useState(guest.rsvpMessage);
   const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState("");
 
   async function submitRsvp(nextStatus: RsvpStatus) {
     setSaving(true);
-    const response = await fetch(`/api/invites/${guest.inviteCode}/rsvp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: nextStatus, message })
-    });
+    setFeedback("");
+    try {
+      const response = await fetch(`/api/invites/${guest.inviteCode}/rsvp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus, message })
+      });
 
-    if (response.ok) {
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setFeedback(data?.error ?? "回复保存失败，请稍后再试");
+        return;
+      }
+
       const data = await response.json();
       setStatus(data.guest.rsvpStatus);
       setMessage(data.guest.rsvpMessage);
+      setFeedback("回复已保存");
+    } catch {
+      setFeedback("网络异常，回复保存失败");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   return (
@@ -138,6 +150,7 @@ export function InviteExperience({ guest, wedding }: Props) {
                 placeholder="可以留下祝福或备注"
                 onChange={(event) => setMessage(event.target.value)}
               />
+              {feedback ? <p className="mt-2 text-xs text-ivory/68">{feedback}</p> : null}
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <button
                   className="tap-target rounded-full bg-ivory px-3 py-3 text-sm font-bold text-cinnabar disabled:opacity-60"

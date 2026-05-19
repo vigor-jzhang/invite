@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import type { Guest, GuestType, RsvpStatus } from "./types";
+import { isInviteCode, parseGuestType, parseRsvpStatus, trimToLength } from "./validation";
 
 const dataPath = path.join(process.cwd(), "data", "guests.json");
 const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
@@ -25,21 +26,30 @@ async function query(strings: TemplateStringsArray, ...values: unknown[]) {
   return db(strings, ...values);
 }
 
+function assertInviteCode(code: string) {
+  if (!isInviteCode(code)) {
+    throw new Error("Invalid invite code");
+  }
+}
+
 function now() {
   return new Date().toISOString();
 }
 
 function normalizeGuest(row: Record<string, unknown>): Guest {
+  const guestType = parseGuestType(row.guest_type ?? row.guestType) ?? "custom";
+  const rsvpStatus = parseRsvpStatus(row.rsvp_status ?? row.rsvpStatus) ?? "pending";
+
   return {
     id: String(row.id),
     inviteCode: String(row.invite_code ?? row.inviteCode),
-    guestName: String(row.guest_name ?? row.guestName),
-    honorific: String(row.honorific),
-    displayName: String(row.display_name ?? row.displayName),
-    guestType: String(row.guest_type ?? row.guestType) as GuestType,
+    guestName: trimToLength(row.guest_name ?? row.guestName, 80),
+    honorific: trimToLength(row.honorific, 20),
+    displayName: trimToLength(row.display_name ?? row.displayName, 100),
+    guestType,
     isActive: Boolean(row.is_active ?? row.isActive),
-    rsvpStatus: String(row.rsvp_status ?? row.rsvpStatus) as RsvpStatus,
-    rsvpMessage: String(row.rsvp_message ?? row.rsvpMessage ?? ""),
+    rsvpStatus,
+    rsvpMessage: trimToLength(row.rsvp_message ?? row.rsvpMessage, 200),
     createdAt: String(row.created_at ?? row.createdAt),
     updatedAt: String(row.updated_at ?? row.updatedAt)
   };
@@ -75,12 +85,19 @@ async function ensureLocalFile() {
 
 async function readLocal() {
   await ensureLocalFile();
-  const data = await fs.readFile(dataPath, "utf8");
-  return JSON.parse(data) as Guest[];
+  try {
+    const data = await fs.readFile(dataPath, "utf8");
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed.map(normalizeGuest) : [];
+  } catch {
+    return [];
+  }
 }
 
 async function writeLocal(guests: Guest[]) {
-  await fs.writeFile(dataPath, JSON.stringify(guests, null, 2));
+  const tmpPath = `${dataPath}.${process.pid}.tmp`;
+  await fs.writeFile(tmpPath, JSON.stringify(guests, null, 2));
+  await fs.rename(tmpPath, dataPath);
 }
 
 export async function ensureSchema() {
@@ -117,6 +134,8 @@ export async function listGuests() {
 }
 
 export async function findGuestByCode(code: string) {
+  assertInviteCode(code);
+
   if (hasPostgres()) {
     await ensureSchema();
     const rows = await query`SELECT * FROM guests WHERE invite_code = ${code} LIMIT 1`;
@@ -128,14 +147,21 @@ export async function findGuestByCode(code: string) {
 }
 
 export async function createGuest(input: CreateGuestInput) {
+  const normalizedInput = {
+    guestName: trimToLength(input.guestName, 80),
+    honorific: trimToLength(input.honorific, 20),
+    displayName: trimToLength(input.displayName, 100),
+    guestType: input.guestType
+  };
+
   const timestamp = now();
   const guest: Guest = {
     id: crypto.randomUUID(),
     inviteCode: inviteCode(),
-    guestName: input.guestName,
-    honorific: input.honorific,
-    displayName: input.displayName,
-    guestType: input.guestType,
+    guestName: normalizedInput.guestName,
+    honorific: normalizedInput.honorific,
+    displayName: normalizedInput.displayName,
+    guestType: normalizedInput.guestType,
     isActive: true,
     rsvpStatus: "pending",
     rsvpMessage: "",
@@ -199,13 +225,16 @@ export async function toggleGuest(id: string) {
 }
 
 export async function updateRsvp(code: string, status: RsvpStatus, message: string) {
+  assertInviteCode(code);
+
   const timestamp = now();
+  const safeMessage = trimToLength(message, 200);
 
   if (hasPostgres()) {
     await ensureSchema();
     const rows = await query`
       UPDATE guests
-      SET rsvp_status = ${status}, rsvp_message = ${message}, updated_at = ${timestamp}
+      SET rsvp_status = ${status}, rsvp_message = ${safeMessage}, updated_at = ${timestamp}
       WHERE invite_code = ${code} AND is_active = TRUE
       RETURNING *
     `;
@@ -220,7 +249,7 @@ export async function updateRsvp(code: string, status: RsvpStatus, message: stri
   guests[index] = {
     ...guests[index],
     rsvpStatus: status,
-    rsvpMessage: message,
+    rsvpMessage: safeMessage,
     updatedAt: timestamp
   };
   await writeLocal(guests);

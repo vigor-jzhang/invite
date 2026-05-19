@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { createGuest, listGuests } from "@/lib/store";
-import type { GuestType } from "@/lib/types";
-
-const guestTypes = new Set(["single", "couple", "family", "custom"]);
+import { parseGuestType, trimToLength } from "@/lib/validation";
 
 export async function GET() {
   const denied = await requireAdmin();
@@ -21,12 +19,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const guestName = String(body?.guestName ?? "").trim();
-  const honorific = String(body?.honorific ?? "").trim();
-  const displayName = String(body?.displayName ?? "").trim();
-  const guestType = String(body?.guestType ?? "single") as GuestType;
+  const guestName = trimToLength(body?.guestName, 80);
+  const honorific = trimToLength(body?.honorific, 20);
+  const displayName = trimToLength(body?.displayName, 100);
+  const guestType = parseGuestType(body?.guestType);
 
-  if (!guestName || !displayName || !honorific || !guestTypes.has(guestType)) {
+  if (!guestName || !displayName || !honorific || !guestType) {
     return NextResponse.json({ error: "请完整填写宾客信息" }, { status: 400 });
   }
 

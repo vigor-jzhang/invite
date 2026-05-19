@@ -25,6 +25,7 @@ export function AdminPanel({ initialAuthed }: Props) {
   const [guestType, setGuestType] = useState<GuestType>("single");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
   const origin = typeof window === "undefined" ? "" : window.location.origin;
@@ -44,10 +45,16 @@ export function AdminPanel({ initialAuthed }: Props) {
   }, [guestName, honorific, guestType]);
 
   const loadGuests = useCallback(async () => {
-    const response = await fetch("/api/admin/guests");
-    if (response.ok) {
-      const data = await response.json();
-      setGuests(data.guests);
+    try {
+      const response = await fetch("/api/admin/guests");
+      if (response.ok) {
+        const data = await response.json();
+        setGuests(data.guests);
+      } else {
+        setError("宾客列表加载失败，请重新登录后再试");
+      }
+    } catch {
+      setError("网络异常，宾客列表加载失败");
     }
   }, []);
 
@@ -61,22 +68,27 @@ export function AdminPanel({ initialAuthed }: Props) {
     event.preventDefault();
     setBusy(true);
     setError("");
-    const response = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password })
-    });
-    setBusy(false);
-    if (!response.ok) {
-      setError("密码不正确");
-      return;
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
+      if (!response.ok) {
+        setError("密码不正确");
+        return;
+      }
+      setAuthed(true);
+      setPassword("");
+    } catch {
+      setError("网络异常，登录失败");
+    } finally {
+      setBusy(false);
     }
-    setAuthed(true);
-    setPassword("");
   }
 
   async function logout() {
-    await fetch("/api/admin/logout", { method: "POST" });
+    await fetch("/api/admin/logout", { method: "POST" }).catch(() => null);
     setAuthed(false);
     setGuests([]);
   }
@@ -85,44 +97,70 @@ export function AdminPanel({ initialAuthed }: Props) {
     event.preventDefault();
     setBusy(true);
     setError("");
-    const response = await fetch("/api/admin/guests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        guestName,
-        honorific,
-        displayName: displayName.trim() || suggestedDisplayName,
-        guestType
-      })
-    });
-    setBusy(false);
+    try {
+      const response = await fetch("/api/admin/guests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          guestName,
+          honorific,
+          displayName: displayName.trim() || suggestedDisplayName,
+          guestType
+        })
+      });
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => null);
-      setError(data?.error ?? "生成失败");
-      return;
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.error ?? "生成失败");
+        return;
+      }
+
+      const data = await response.json();
+      setGuests((items) => [data.guest, ...items]);
+      setGuestName("");
+      setDisplayName("");
+      setNotice("专属请柬已生成");
+      window.setTimeout(() => setNotice(""), 1800);
+    } catch {
+      setError("网络异常，生成失败");
+    } finally {
+      setBusy(false);
     }
-
-    const data = await response.json();
-    setGuests((items) => [data.guest, ...items]);
-    setGuestName("");
-    setDisplayName("");
   }
 
   async function toggle(id: string) {
-    const response = await fetch(`/api/admin/guests/${id}/toggle`, { method: "POST" });
-    if (!response.ok) {
-      return;
+    try {
+      const response = await fetch(`/api/admin/guests/${id}/toggle`, { method: "POST" });
+      if (!response.ok) {
+        setError("状态更新失败");
+        return;
+      }
+      const data = await response.json();
+      setGuests((items) => items.map((item) => (item.id === id ? data.guest : item)));
+    } catch {
+      setError("网络异常，状态更新失败");
     }
-    const data = await response.json();
-    setGuests((items) => items.map((item) => (item.id === id ? data.guest : item)));
   }
 
   async function copyLink(code: string) {
     const link = `${origin}/i/${code}`;
-    await navigator.clipboard.writeText(link);
-    setCopied(code);
-    window.setTimeout(() => setCopied(""), 1600);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        throw new Error("Clipboard API unavailable");
+      }
+      setCopied(code);
+      setNotice("链接已复制");
+    } catch {
+      window.prompt("复制这个专属请柬链接", link);
+      setNotice("请手动复制链接");
+    } finally {
+      window.setTimeout(() => {
+        setCopied("");
+        setNotice("");
+      }, 1600);
+    }
   }
 
   if (!authed) {
@@ -144,6 +182,7 @@ export function AdminPanel({ initialAuthed }: Props) {
             onChange={(event) => setPassword(event.target.value)}
           />
           {error ? <p className="mt-3 text-sm text-cinnabar">{error}</p> : null}
+          {notice ? <p className="mt-3 text-sm text-emerald-700">{notice}</p> : null}
           <button
             className="tap-target mt-5 w-full rounded-full bg-cinnabar px-4 py-3 font-bold text-ivory disabled:opacity-60"
             disabled={busy}
@@ -226,6 +265,7 @@ export function AdminPanel({ initialAuthed }: Props) {
           />
 
           {error ? <p className="mt-3 text-sm text-cinnabar">{error}</p> : null}
+          {notice ? <p className="mt-3 text-sm text-emerald-700">{notice}</p> : null}
 
           <button
             className="tap-target mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-cinnabar px-4 py-3 font-bold text-ivory disabled:opacity-60"

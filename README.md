@@ -19,7 +19,7 @@ npm run dev
 - 示例请柬：http://localhost:3000/i/demo
 - 后台：http://localhost:3000/admin
 
-本地默认后台密码是 `admin123`。上线前请在 Vercel 环境变量里设置 `ADMIN_PASSWORD`。
+本地默认后台密码是 `admin123`。生产环境不会使用默认密码，上线前必须在 Vercel 环境变量里设置 `ADMIN_PASSWORD`。
 
 ## 数据存储
 
