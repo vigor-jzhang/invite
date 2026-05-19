@@ -79,10 +79,8 @@ export function InviteExperience({ guest, wedding }: Props) {
                   <h2 className="font-kai gold-text mt-4 break-words text-4xl font-black">{guest.displayName}</h2>
                 </>
               ) : (
-                <p className="font-serif text-lg font-bold leading-9 text-gold/85">
-                  谨以此柬
-                  <br />
-                  敬邀亲友莅临
+                <p className="font-serif text-2xl font-bold leading-9 text-gold/85">
+                  谨以此柬 敬请亲友
                 </p>
               )}
               <p className="mt-6 font-serif text-lg font-bold leading-9 text-ivory drop-shadow">
