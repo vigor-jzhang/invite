@@ -1,4 +1,4 @@
-export type GuestType = "single" | "couple" | "family" | "custom";
+export type GuestType = "male" | "female" | "couple" | "family" | "custom";
 
 export type RsvpStatus = "pending" | "attending" | "declined";
 

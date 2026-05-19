@@ -71,7 +71,7 @@ async function ensureLocalFile() {
         guestName: "张先生",
         honorific: "先生",
         displayName: "张先生",
-        guestType: "single",
+        guestType: "male",
         isActive: true,
         rsvpStatus: "pending",
         rsvpMessage: "",

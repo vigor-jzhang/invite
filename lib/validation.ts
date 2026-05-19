@@ -1,6 +1,6 @@
 import type { GuestType, RsvpStatus } from "./types";
 
-export const guestTypes = ["single", "couple", "family", "custom"] as const;
+export const guestTypes = ["male", "female", "couple", "family", "custom"] as const;
 export const rsvpStatuses = ["pending", "attending", "declined"] as const;
 
 const guestTypeSet = new Set<string>(guestTypes);
@@ -12,6 +12,10 @@ export function trimToLength(value: unknown, maxLength: number) {
 
 export function parseGuestType(value: unknown): GuestType | null {
   const normalized = String(value ?? "");
+  if (normalized === "single") {
+    return "male";
+  }
+
   return guestTypeSet.has(normalized) ? (normalized as GuestType) : null;
 }
 
