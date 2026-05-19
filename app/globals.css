@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #2a0909;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, rgba(215, 173, 87, 0.16), transparent 34rem),
+    #2a0909;
+}
+
+body {
+  min-height: 100dvh;
+  margin: 0;
+  color: #fff8ec;
+  background: transparent;
+  font-family: var(--font-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.phone-shell {
+  width: min(100vw, 460px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: #7a1717;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.gold-text {
+  background: linear-gradient(120deg, #fff1ba, #d2a74b, #fff7d8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tap-target {
+  min-height: 44px;
+}
