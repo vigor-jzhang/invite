@@ -253,6 +253,32 @@ export async function toggleGuest(id: string) {
   return guests[index];
 }
 
+export async function deleteGuest(id: string) {
+  if (hasPostgres()) {
+    await ensureSchema();
+    const rows = await query`
+      DELETE FROM guests
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    return rows[0] ? normalizeGuest(rows[0]) : null;
+  }
+
+  if (!canUseLocalStore) {
+    return null;
+  }
+
+  const guests = await readLocal();
+  const index = guests.findIndex((guest) => guest.id === id);
+  if (index === -1) {
+    return null;
+  }
+
+  const [guest] = guests.splice(index, 1);
+  await writeLocal(guests);
+  return guest;
+}
+
 export async function updateRsvp(code: string, status: RsvpStatus, message: string) {
   assertInviteCode(code);
 

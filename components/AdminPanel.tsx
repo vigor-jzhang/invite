@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, LogOut, Plus, Shield, UserRound, X } from "lucide-react";
+import { ExternalLink, ImageDown, LogOut, Plus, Shield, Trash2, UserRound } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Guest, GuestType } from "@/lib/types";
 
@@ -25,7 +25,6 @@ export function AdminPanel({ initialAuthed }: Props) {
   const [displayName, setDisplayName] = useState("");
   const [guestType, setGuestType] = useState<GuestType>("male");
   const [error, setError] = useState("");
-  const [copied, setCopied] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -129,39 +128,32 @@ export function AdminPanel({ initialAuthed }: Props) {
     }
   }
 
-  async function toggle(id: string) {
+  async function deleteGuest(id: string, displayName: string) {
+    const confirmed = window.confirm(`确定删除 ${displayName} 的请柬吗？删除后后台不再显示，该专属链接也会失效。`);
+    if (!confirmed) {
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/admin/guests/${id}/toggle`, { method: "POST" });
+      const response = await fetch(`/api/admin/guests/${id}`, { method: "DELETE" });
       if (!response.ok) {
-        setError("状态更新失败");
+        setError("删除失败");
         return;
       }
-      const data = await response.json();
-      setGuests((items) => items.map((item) => (item.id === id ? data.guest : item)));
+      setGuests((items) => items.filter((item) => item.id !== id));
+      setNotice("宾客已删除");
+      window.setTimeout(() => setNotice(""), 1600);
     } catch {
-      setError("网络异常，状态更新失败");
+      setError("网络异常，删除失败");
     }
   }
 
-  async function copyLink(code: string) {
-    const link = `${origin}/i/${code}`;
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(link);
-      } else {
-        throw new Error("Clipboard API unavailable");
-      }
-      setCopied(code);
-      setNotice("链接已复制");
-    } catch {
-      window.prompt("复制这个专属请柬链接", link);
-      setNotice("请手动复制链接");
-    } finally {
-      window.setTimeout(() => {
-        setCopied("");
-        setNotice("");
-      }, 1600);
-    }
+  function openInvite(code: string) {
+    window.open(`${origin}/i/${code}`, "_blank", "noopener,noreferrer");
+  }
+
+  function openInviteImage(code: string) {
+    window.open(`${origin}/api/invites/${code}/image`, "_blank", "noopener,noreferrer");
   }
 
   if (!authed) {
@@ -314,20 +306,29 @@ export function AdminPanel({ initialAuthed }: Props) {
                 <p className="mt-3 break-all rounded-2xl bg-[#fffdf5] px-3 py-2 text-xs text-slate-900/58">
                   {origin}/i/{guest.inviteCode}
                 </p>
-                <div className="mt-3 grid grid-cols-[1fr_88px] gap-2">
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <button
                     className="tap-target flex items-center justify-center gap-2 rounded-full bg-blue-600 px-3 py-2 text-sm font-bold text-white"
-                    onClick={() => copyLink(guest.inviteCode)}
+                    onClick={() => openInvite(guest.inviteCode)}
                   >
-                    {copied === guest.inviteCode ? <Check size={17} /> : <Copy size={17} />}
-                    {copied === guest.inviteCode ? "已复制" : "复制链接"}
+                    <ExternalLink size={17} />
+                    跳转至请柬
                   </button>
                   <button
-                    className="tap-target flex items-center justify-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700"
-                    onClick={() => toggle(guest.id)}
+                    className="tap-target flex items-center justify-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700"
+                    onClick={() => openInviteImage(guest.inviteCode)}
                   >
-                    {guest.isActive ? <X size={16} /> : <Check size={16} />}
-                    {guest.isActive ? "停用" : "启用"}
+                    <ImageDown size={17} />
+                    生成图片
+                  </button>
+                </div>
+                <div className="mt-2">
+                  <button
+                    className="tap-target flex w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700"
+                    onClick={() => deleteGuest(guest.id, guest.displayName)}
+                  >
+                    <Trash2 size={17} />
+                    删除宾客
                   </button>
                 </div>
                 <p className="mt-3 text-xs text-slate-900/45">
