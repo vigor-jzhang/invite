@@ -8,10 +8,11 @@ import type { Guest, WeddingConfig } from "@/lib/types";
 type Props = {
   guest?: Guest;
   wedding: WeddingConfig;
+  initialOpened?: boolean;
 };
 
-export function InviteExperience({ guest, wedding }: Props) {
-  const [opened, setOpened] = useState(false);
+export function InviteExperience({ guest, wedding, initialOpened = false }: Props) {
+  const [opened, setOpened] = useState(initialOpened);
 
   return (
     <main className="phone-shell min-h-dvh bg-wine">

@@ -13,6 +13,7 @@
     "@fontsource/noto-serif-sc": "^5.2.9",
     "@neondatabase/serverless": "^1.1.0",
     "framer-motion": "^11.18.2",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^0.475.0",
     "next": "^16.2.6",
     "react": "^19.2.6",
