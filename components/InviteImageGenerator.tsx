@@ -56,14 +56,20 @@ export function InviteImageGenerator({ code }: Props) {
       await waitForImages(captureRef.current);
       await wait(900);
 
+      const captureWidth = captureRef.current.scrollWidth;
+      const captureHeight = captureRef.current.scrollHeight;
+
       const nextImageUrl = await toPng(captureRef.current, {
         cacheBust: true,
         pixelRatio: 3,
         backgroundColor: "#7f1717",
-        width: captureRef.current.offsetWidth,
-        height: captureRef.current.offsetHeight,
+        width: captureWidth,
+        height: captureHeight,
         style: {
+          width: `${captureWidth}px`,
+          height: `${captureHeight}px`,
           margin: "0",
+          overflow: "visible",
           transform: "none"
         }
       });
@@ -154,8 +160,8 @@ export function InviteImageGenerator({ code }: Props) {
         </div>
       </div>
 
-      <div className="pointer-events-none fixed left-[-10000px] top-0 w-[390px]" aria-hidden="true">
-        <div ref={captureRef} className="h-[844px] w-[390px] overflow-hidden bg-wine">
+      <div className="invite-capture pointer-events-none fixed left-0 top-0 -z-10 w-[390px]" aria-hidden="true">
+        <div ref={captureRef} className="w-[390px] overflow-visible bg-wine">
           {payload ? <InviteExperience guest={payload.guest} wedding={payload.wedding} initialOpened /> : null}
         </div>
       </div>
