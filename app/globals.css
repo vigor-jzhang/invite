@@ -49,6 +49,10 @@ select {
   color: transparent;
 }
 
+.font-kai {
+  font-family: "KaiTi", "STKaiti", "Kaiti SC", "BiauKai", serif;
+}
+
 .tap-target {
   min-height: 44px;
 }

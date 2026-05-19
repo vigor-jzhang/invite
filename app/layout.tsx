@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "婚礼答谢宴请柬",
-  description: "专属婚礼答谢宴 H5 请柬"
+  title: "良缘答谢宴请柬",
+  description: "专属良缘答谢宴 H5 请柬"
 };
 
 export const viewport: Viewport = {
