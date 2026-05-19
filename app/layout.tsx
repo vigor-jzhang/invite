@@ -1,4 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource/noto-serif-sc/chinese-simplified-400.css";
+import "@fontsource/noto-serif-sc/chinese-simplified-500.css";
+import "@fontsource/noto-serif-sc/chinese-simplified-700.css";
+import "@fontsource/noto-serif-sc/chinese-simplified-900.css";
+import "@fontsource/ma-shan-zheng/chinese-simplified-400.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

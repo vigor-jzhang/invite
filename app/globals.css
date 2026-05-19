@@ -23,7 +23,7 @@ body {
   margin: 0;
   color: #fff8ec;
   background: transparent;
-  font-family: var(--font-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
 button,
@@ -49,8 +49,13 @@ select {
   color: transparent;
 }
 
+.font-serif {
+  font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+}
+
 .font-kai {
-  font-family: "KaiTi", "STKaiti", "Kaiti SC", "BiauKai", serif;
+  font-family: "Ma Shan Zheng", "KaiTi", "STKaiti", "Kaiti SC", serif;
+  font-weight: 400;
 }
 
 .tap-target {
