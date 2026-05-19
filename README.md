@@ -25,14 +25,14 @@ npm run dev
 
 本地没有配置 `DATABASE_URL` 时，项目会自动使用 `data/guests.json`。
 
-部署到 Vercel 后，建议在 Vercel Marketplace 添加 Neon 数据库，并配置：
+部署到 Vercel 后，必须在 Vercel Marketplace 添加 Neon 数据库，并配置：
 
 ```bash
 DATABASE_URL=...
 ADMIN_PASSWORD=...
 ```
 
-应用首次访问数据库时会自动创建 `guests` 表。
+应用首次访问数据库时会自动创建 `guests` 表。生产环境没有 `DATABASE_URL` 时不会使用本地 JSON 文件，因为 Vercel 函数文件系统不能持久写入。
 
 ## 婚宴信息
 

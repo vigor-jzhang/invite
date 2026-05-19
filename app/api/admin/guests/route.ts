@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { createGuest, listGuests } from "@/lib/store";
+import { createGuest, hasPersistentStore, listGuests } from "@/lib/store";
 import { parseGuestType, trimToLength } from "@/lib/validation";
 
 export async function GET() {
   const denied = await requireAdmin();
   if (denied) {
     return denied;
+  }
+
+  if (!hasPersistentStore()) {
+    return NextResponse.json({
+      guests: [],
+      warning: "生产环境需要配置 DATABASE_URL 后才能保存宾客"
+    });
   }
 
   return NextResponse.json({ guests: await listGuests() });
@@ -28,12 +35,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "请完整填写宾客信息" }, { status: 400 });
   }
 
-  const guest = await createGuest({
-    guestName,
-    honorific,
-    displayName,
-    guestType
-  });
+  let guest;
+  try {
+    guest = await createGuest({
+      guestName,
+      honorific,
+      displayName,
+      guestType
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "生产环境需要先配置 DATABASE_URL 数据库连接" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ guest });
 }

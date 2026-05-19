@@ -5,6 +5,7 @@ import { isInviteCode, parseGuestType, parseRsvpStatus, trimToLength } from "./v
 
 const dataPath = path.join(process.cwd(), "data", "guests.json");
 const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+const canUseLocalStore = !databaseUrl && process.env.NODE_ENV !== "production";
 
 type CreateGuestInput = {
   guestName: string;
@@ -15,6 +16,10 @@ type CreateGuestInput = {
 
 function hasPostgres() {
   return Boolean(databaseUrl);
+}
+
+export function hasPersistentStore() {
+  return hasPostgres() || canUseLocalStore;
 }
 
 async function query(strings: TemplateStringsArray, ...values: unknown[]) {
@@ -60,6 +65,10 @@ function inviteCode() {
 }
 
 async function ensureLocalFile() {
+  if (!canUseLocalStore) {
+    return;
+  }
+
   await fs.mkdir(path.dirname(dataPath), { recursive: true });
   try {
     await fs.access(dataPath);
@@ -84,6 +93,10 @@ async function ensureLocalFile() {
 }
 
 async function readLocal() {
+  if (!canUseLocalStore) {
+    return [];
+  }
+
   await ensureLocalFile();
   try {
     const data = await fs.readFile(dataPath, "utf8");
@@ -95,6 +108,10 @@ async function readLocal() {
 }
 
 async function writeLocal(guests: Guest[]) {
+  if (!canUseLocalStore) {
+    throw new Error("DATABASE_URL is required for persistent storage in production");
+  }
+
   const tmpPath = `${dataPath}.${process.pid}.tmp`;
   await fs.writeFile(tmpPath, JSON.stringify(guests, null, 2));
   await fs.rename(tmpPath, dataPath);
@@ -142,6 +159,10 @@ export async function findGuestByCode(code: string) {
     return rows[0] ? normalizeGuest(rows[0]) : null;
   }
 
+  if (!canUseLocalStore) {
+    throw new Error("DATABASE_URL is required for creating guests in production");
+  }
+
   const guests = await readLocal();
   return guests.find((guest) => guest.inviteCode === code) ?? null;
 }
@@ -185,6 +206,10 @@ export async function createGuest(input: CreateGuestInput) {
     return guest;
   }
 
+  if (!canUseLocalStore) {
+    return null;
+  }
+
   const guests = await readLocal();
   guests.unshift(guest);
   await writeLocal(guests);
@@ -208,6 +233,10 @@ export async function toggleGuest(id: string) {
       RETURNING *
     `;
     return normalizeGuest(rows[0]);
+  }
+
+  if (!canUseLocalStore) {
+    return null;
   }
 
   const guests = await readLocal();
