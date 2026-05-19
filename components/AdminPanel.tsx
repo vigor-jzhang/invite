@@ -153,7 +153,7 @@ export function AdminPanel({ initialAuthed }: Props) {
   }
 
   function openInviteImage(code: string) {
-    window.open(`${origin}/api/invites/${code}/image`, "_blank", "noopener,noreferrer");
+    window.open(`${origin}/i/${code}/image`, "_blank", "noopener,noreferrer");
   }
 
   if (!authed) {
