@@ -16,10 +16,22 @@ export function InviteExperience({ guest, wedding, initialOpened = false, export
   const [opened, setOpened] = useState(initialOpened);
   const entranceInitial = exportMode ? false : undefined;
   const entranceTransition = exportMode ? { duration: 0 } : undefined;
+  const surfaceClass = exportMode
+    ? "invite-surface relative min-h-dvh overflow-hidden bg-wine px-5 py-5"
+    : "invite-surface relative min-h-dvh overflow-hidden bg-[url('/invitation-bg.png')] bg-cover bg-center px-5 py-5";
 
   return (
     <main className={`phone-shell min-h-dvh bg-wine ${exportMode ? "invite-export" : ""}`}>
-      <section className="invite-surface relative min-h-dvh overflow-hidden bg-[url('/invitation-bg.png')] bg-cover bg-center px-5 py-5">
+      <section className={surfaceClass}>
+        {exportMode ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            src="/invitation-bg.png"
+            alt=""
+            aria-hidden="true"
+          />
+        ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-wine/8 to-wine/35" />
         <motion.div
           className="absolute left-1/2 top-8 h-24 w-24 -translate-x-1/2 rounded-full border border-gold/40 bg-gold/10 blur-sm"
