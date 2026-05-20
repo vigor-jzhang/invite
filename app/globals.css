@@ -72,7 +72,12 @@ select {
 }
 
 .invite-capture .invite-footer,
-.invite-capture .invite-footer * {
+.invite-capture .invite-footer {
   color: #fff8ec !important;
+}
+
+.invite-footer-icon,
+.invite-capture .invite-footer-icon {
+  color: #d7ad57 !important;
   stroke: currentColor;
 }
