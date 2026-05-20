@@ -133,7 +133,7 @@ export function InviteExperience({ guest, wedding, initialOpened = false }: Prop
               </div>
             </motion.section>
 
-            <footer className="mt-auto py-7 text-center font-serif text-sm leading-7 text-ivory/78">
+            <footer className="invite-footer mt-auto py-7 text-center font-serif text-sm leading-7 text-ivory">
               <Sparkles className="mx-auto mb-2 text-gold" size={18} />
               {wedding.hostLine}
             </footer>

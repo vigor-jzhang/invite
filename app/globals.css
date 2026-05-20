@@ -66,3 +66,13 @@ select {
   width: 390px;
   margin: 0;
 }
+
+.invite-footer {
+  color: #fff8ec;
+}
+
+.invite-capture .invite-footer,
+.invite-capture .invite-footer * {
+  color: #fff8ec !important;
+  stroke: currentColor;
+}
