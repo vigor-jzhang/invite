@@ -10,15 +10,13 @@ type Props = {
   wedding: WeddingConfig;
   initialOpened?: boolean;
   exportMode?: boolean;
-  exportBackgroundSrc?: string;
 };
 
 export function InviteExperience({
   guest,
   wedding,
   initialOpened = false,
-  exportMode = false,
-  exportBackgroundSrc = "/invitation-bg.png"
+  exportMode = false
 }: Props) {
   const [opened, setOpened] = useState(initialOpened);
   const entranceInitial = exportMode ? false : undefined;
@@ -30,15 +28,6 @@ export function InviteExperience({
   return (
     <main className={`phone-shell min-h-dvh bg-wine ${exportMode ? "invite-export" : ""}`}>
       <section className={surfaceClass}>
-        {exportMode ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className="absolute inset-0 h-full w-full object-cover object-center"
-            src={exportBackgroundSrc}
-            alt=""
-            aria-hidden="true"
-          />
-        ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-wine/8 to-wine/35" />
         <motion.div
           className="absolute left-1/2 top-8 h-24 w-24 -translate-x-1/2 rounded-full border border-gold/40 bg-gold/10 blur-sm"

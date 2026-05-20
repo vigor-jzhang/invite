@@ -66,11 +66,17 @@ select {
   width: 460px;
   min-height: 1180px;
   margin: 0;
+  background: transparent;
   overflow: visible;
+}
+
+.invite-export {
+  background: transparent !important;
 }
 
 .invite-export .invite-surface {
   min-height: 1180px;
+  background: transparent !important;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

@@ -16,6 +16,7 @@ type InvitePayload = {
 };
 
 const exportWidth = 460;
+const exportPixelRatio = 3;
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -28,6 +29,54 @@ function blobToDataUrl(blob: Blob) {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
+}
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Image load failed"));
+    image.src = src;
+  });
+}
+
+async function composeInviteImage(
+  backgroundDataUrl: string,
+  foregroundDataUrl: string,
+  width: number,
+  height: number
+) {
+  const [backgroundImage, foregroundImage] = await Promise.all([
+    loadImage(backgroundDataUrl),
+    loadImage(foregroundDataUrl)
+  ]);
+  const canvas = document.createElement("canvas");
+  const targetWidth = width * exportPixelRatio;
+  const targetHeight = height * exportPixelRatio;
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Canvas unavailable");
+  }
+
+  context.fillStyle = "#7f1717";
+  context.fillRect(0, 0, targetWidth, targetHeight);
+
+  const scale = Math.max(
+    targetWidth / backgroundImage.naturalWidth,
+    targetHeight / backgroundImage.naturalHeight
+  );
+  const backgroundWidth = backgroundImage.naturalWidth * scale;
+  const backgroundHeight = backgroundImage.naturalHeight * scale;
+  const backgroundX = (targetWidth - backgroundWidth) / 2;
+  const backgroundY = (targetHeight - backgroundHeight) / 2;
+
+  context.drawImage(backgroundImage, backgroundX, backgroundY, backgroundWidth, backgroundHeight);
+  context.drawImage(foregroundImage, 0, 0, targetWidth, targetHeight);
+
+  return canvas.toDataURL("image/png");
 }
 
 async function waitForImages(root: HTMLElement) {
@@ -71,21 +120,27 @@ export function InviteImageGenerator({ code }: Props) {
       const captureWidth = exportWidth;
       const captureHeight = Math.max(captureRef.current.scrollHeight, 1180);
 
-      const nextImageUrl = await toPng(captureRef.current, {
+      const foregroundImageUrl = await toPng(captureRef.current, {
         cacheBust: true,
-        pixelRatio: 3,
-        backgroundColor: "#7f1717",
+        pixelRatio: exportPixelRatio,
         width: captureWidth,
         height: captureHeight,
         style: {
           width: `${captureWidth}px`,
           height: `${captureHeight}px`,
           minHeight: `${captureHeight}px`,
+          background: "transparent",
           margin: "0",
           overflow: "visible",
           transform: "none"
         }
       });
+      const nextImageUrl = await composeInviteImage(
+        backgroundDataUrl,
+        foregroundImageUrl,
+        captureWidth,
+        captureHeight
+      );
 
       setImageUrl(nextImageUrl);
       setFileName(`${payload.guest.displayName}-良缘答谢宴请柬.png`);
@@ -186,13 +241,7 @@ export function InviteImageGenerator({ code }: Props) {
       <div className="invite-capture pointer-events-none fixed left-0 top-0 -z-10 w-[460px]" aria-hidden="true">
         <div ref={captureRef} className="w-[460px] overflow-visible bg-wine">
           {payload && backgroundDataUrl ? (
-            <InviteExperience
-              guest={payload.guest}
-              wedding={payload.wedding}
-              initialOpened
-              exportMode
-              exportBackgroundSrc={backgroundDataUrl}
-            />
+            <InviteExperience guest={payload.guest} wedding={payload.wedding} initialOpened exportMode />
           ) : null}
         </div>
       </div>
