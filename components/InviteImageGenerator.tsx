@@ -21,6 +21,15 @@ function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
 async function waitForImages(root: HTMLElement) {
   const images = Array.from(root.querySelectorAll("img"));
   await Promise.all(
@@ -44,9 +53,10 @@ export function InviteImageGenerator({ code }: Props) {
   const [fileName, setFileName] = useState("invite.png");
   const [error, setError] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [backgroundDataUrl, setBackgroundDataUrl] = useState("");
 
   const generateImage = useCallback(async () => {
-    if (!captureRef.current || !payload) {
+    if (!captureRef.current || !payload || !backgroundDataUrl) {
       return;
     }
 
@@ -84,7 +94,7 @@ export function InviteImageGenerator({ code }: Props) {
     } finally {
       setGenerating(false);
     }
-  }, [payload]);
+  }, [backgroundDataUrl, payload]);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,15 +102,25 @@ export function InviteImageGenerator({ code }: Props) {
     async function loadInvite() {
       setError("");
       try {
-        const response = await fetch(`/api/invites/${code}`);
-        if (!response.ok) {
+        const [inviteResponse, backgroundResponse] = await Promise.all([
+          fetch(`/api/invites/${code}`),
+          fetch("/invitation-bg.png")
+        ]);
+
+        if (!inviteResponse.ok) {
           setError("请柬不存在或已失效");
           return;
         }
+        if (!backgroundResponse.ok) {
+          setError("背景图片加载失败，请刷新后重试");
+          return;
+        }
 
-        const nextPayload = (await response.json()) as InvitePayload;
+        const nextPayload = (await inviteResponse.json()) as InvitePayload;
+        const nextBackgroundDataUrl = await blobToDataUrl(await backgroundResponse.blob());
         if (!cancelled) {
           setPayload(nextPayload);
+          setBackgroundDataUrl(nextBackgroundDataUrl);
         }
       } catch {
         setError("请柬加载失败，请刷新后重试");
@@ -165,7 +185,15 @@ export function InviteImageGenerator({ code }: Props) {
 
       <div className="invite-capture pointer-events-none fixed left-0 top-0 -z-10 w-[460px]" aria-hidden="true">
         <div ref={captureRef} className="w-[460px] overflow-visible bg-wine">
-          {payload ? <InviteExperience guest={payload.guest} wedding={payload.wedding} initialOpened exportMode /> : null}
+          {payload && backgroundDataUrl ? (
+            <InviteExperience
+              guest={payload.guest}
+              wedding={payload.wedding}
+              initialOpened
+              exportMode
+              exportBackgroundSrc={backgroundDataUrl}
+            />
+          ) : null}
         </div>
       </div>
     </main>

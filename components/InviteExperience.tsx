@@ -10,9 +10,16 @@ type Props = {
   wedding: WeddingConfig;
   initialOpened?: boolean;
   exportMode?: boolean;
+  exportBackgroundSrc?: string;
 };
 
-export function InviteExperience({ guest, wedding, initialOpened = false, exportMode = false }: Props) {
+export function InviteExperience({
+  guest,
+  wedding,
+  initialOpened = false,
+  exportMode = false,
+  exportBackgroundSrc = "/invitation-bg.png"
+}: Props) {
   const [opened, setOpened] = useState(initialOpened);
   const entranceInitial = exportMode ? false : undefined;
   const entranceTransition = exportMode ? { duration: 0 } : undefined;
@@ -27,7 +34,7 @@ export function InviteExperience({ guest, wedding, initialOpened = false, export
           // eslint-disable-next-line @next/next/no-img-element
           <img
             className="absolute inset-0 h-full w-full object-cover object-center"
-            src="/invitation-bg.png"
+            src={exportBackgroundSrc}
             alt=""
             aria-hidden="true"
           />
