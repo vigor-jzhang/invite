@@ -15,6 +15,8 @@ type InvitePayload = {
   wedding: WeddingConfig;
 };
 
+const exportWidth = 430;
+
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -56,7 +58,7 @@ export function InviteImageGenerator({ code }: Props) {
       await waitForImages(captureRef.current);
       await wait(900);
 
-      const captureWidth = 390;
+      const captureWidth = exportWidth;
       const captureHeight = Math.max(captureRef.current.scrollHeight, 1180);
 
       const nextImageUrl = await toPng(captureRef.current, {
@@ -161,8 +163,8 @@ export function InviteImageGenerator({ code }: Props) {
         </div>
       </div>
 
-      <div className="invite-capture pointer-events-none fixed left-0 top-0 -z-10 w-[390px]" aria-hidden="true">
-        <div ref={captureRef} className="w-[390px] overflow-visible bg-wine">
+      <div className="invite-capture pointer-events-none fixed left-0 top-0 -z-10 w-[430px]" aria-hidden="true">
+        <div ref={captureRef} className="w-[430px] overflow-visible bg-wine">
           {payload ? <InviteExperience guest={payload.guest} wedding={payload.wedding} initialOpened exportMode /> : null}
         </div>
       </div>
