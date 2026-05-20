@@ -9,32 +9,36 @@ type Props = {
   guest?: Guest;
   wedding: WeddingConfig;
   initialOpened?: boolean;
+  exportMode?: boolean;
 };
 
-export function InviteExperience({ guest, wedding, initialOpened = false }: Props) {
+export function InviteExperience({ guest, wedding, initialOpened = false, exportMode = false }: Props) {
   const [opened, setOpened] = useState(initialOpened);
+  const entranceInitial = exportMode ? false : undefined;
+  const entranceTransition = exportMode ? { duration: 0 } : undefined;
 
   return (
-    <main className="phone-shell min-h-dvh bg-wine">
-      <section className="relative min-h-dvh overflow-hidden bg-[url('/invitation-bg.png')] bg-cover bg-center px-5 py-5">
+    <main className={`phone-shell min-h-dvh bg-wine ${exportMode ? "invite-export" : ""}`}>
+      <section className="invite-surface relative min-h-dvh overflow-hidden bg-[url('/invitation-bg.png')] bg-cover bg-center px-5 py-5">
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-wine/8 to-wine/35" />
         <motion.div
           className="absolute left-1/2 top-8 h-24 w-24 -translate-x-1/2 rounded-full border border-gold/40 bg-gold/10 blur-sm"
-          animate={{ opacity: [0.45, 0.8, 0.45], scale: [1, 1.12, 1] }}
-          transition={{ duration: 3.6, repeat: Infinity }}
+          animate={exportMode ? { opacity: 0.65, scale: 1.08 } : { opacity: [0.45, 0.8, 0.45], scale: [1, 1.12, 1] }}
+          transition={exportMode ? { duration: 0 } : { duration: 3.6, repeat: Infinity }}
         />
 
         {!opened ? (
           <motion.div
             className="relative z-10 flex min-h-[calc(100dvh-40px)] flex-col items-center justify-center text-center"
-            initial={{ opacity: 0 }}
+            initial={entranceInitial ?? { opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={entranceTransition}
           >
             <motion.div
               className="w-full rounded-[28px] border border-gold/50 bg-gradient-to-br from-cinnabar via-[#8d1919] to-wine p-6 shadow-glow"
-              initial={{ y: 28, opacity: 0, scale: 0.96 }}
+              initial={entranceInitial ?? { y: 28, opacity: 0, scale: 0.96 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
-              transition={{ duration: 0.75, ease: "easeOut" }}
+              transition={exportMode ? { duration: 0 } : { duration: 0.75, ease: "easeOut" }}
             >
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-gold/60 bg-gold/10 font-serif text-4xl font-black text-gold">
                 囍
@@ -52,16 +56,16 @@ export function InviteExperience({ guest, wedding, initialOpened = false }: Prop
           </motion.div>
         ) : (
           <motion.div
-            className="relative z-10 mx-auto flex min-h-[calc(100dvh-40px)] flex-col"
-            initial={{ opacity: 0 }}
+            className="invite-export-content relative z-10 mx-auto flex min-h-[calc(100dvh-40px)] flex-col"
+            initial={entranceInitial ?? { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={exportMode ? { duration: 0 } : { duration: 0.6 }}
           >
             <motion.header
               className="pt-7 text-center"
-              initial={{ y: 18, opacity: 0 }}
+              initial={entranceInitial ?? { y: 18, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.12 }}
+              transition={exportMode ? { duration: 0 } : { delay: 0.12 }}
             >
               <p className="font-serif text-xs tracking-[0.42em] text-gold">INVITATION</p>
               <h1 className="gold-text mt-3 font-serif text-4xl font-black">{wedding.banquetTitle}</h1>
@@ -70,9 +74,9 @@ export function InviteExperience({ guest, wedding, initialOpened = false }: Prop
 
             <motion.section
               className="mt-6 px-5 py-4 text-center"
-              initial={{ y: 24, opacity: 0 }}
+              initial={entranceInitial ?? { y: 24, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.28 }}
+              transition={exportMode ? { duration: 0 } : { delay: 0.28 }}
             >
               {guest ? (
                 <>
@@ -104,9 +108,9 @@ export function InviteExperience({ guest, wedding, initialOpened = false }: Prop
 
             <motion.section
               className="mt-4 space-y-5 px-6 text-center font-serif text-ivory drop-shadow"
-              initial={{ y: 24, opacity: 0 }}
+              initial={entranceInitial ?? { y: 24, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.42 }}
+              transition={exportMode ? { duration: 0 } : { delay: 0.42 }}
             >
               <div>
                 <div className="mb-2 flex items-center justify-center gap-2 text-gold/85">

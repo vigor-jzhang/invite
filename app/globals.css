@@ -64,14 +64,25 @@ select {
 
 .invite-capture .phone-shell {
   width: 390px;
+  min-height: 1180px;
   margin: 0;
+  overflow: visible;
+}
+
+.invite-export .invite-surface {
+  min-height: 1180px;
+  background-size: 390px auto;
+  background-position: top center;
+}
+
+.invite-export .invite-export-content {
+  min-height: 1140px;
 }
 
 .invite-footer {
   color: #fff8ec;
 }
 
-.invite-capture .invite-footer,
 .invite-capture .invite-footer {
   color: #fff8ec !important;
 }
